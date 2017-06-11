@@ -7,7 +7,7 @@ import './css/oswald.css'
 import './css/open-sans.css'
 import './css/pure-min.css'
 import './App.css'
-
+import logo from './img/care.png'
 class App extends Component {
   constructor(props) {
     super(props)
@@ -42,14 +42,20 @@ class App extends Component {
 
     // Declaring this for later so we can chain functions on SimpleStorage.
     var simpleStorageInstance
-
+   // const balance = web3RPC.eth.getBalance("0xde0B295669a9FD93d5F28D9Ec85E40f4cb697BAe")
+   // this.setState({ balance: balance })
     // Get accounts.
     web3RPC.eth.getAccounts(function(error, accounts) {
       console.log(accounts)
+      
+      simpleStorage.deployed().then(function(instance) {
+        simpleStorageInstance = instance
+        simpleStorageInstance.addCharity("exampleCharity.com", 0xde0B295669a9FD93d5F28D9Ec85E40f4cb697BAe, {from: accounts[0]})
+      })
+
 
       simpleStorage.deployed().then(function(instance) {
         simpleStorageInstance = instance
-     //   self.setState({ balance: web3RPC.eth.getBalance(accounts[0]) })
         // Stores a value of 5.
         return simpleStorageInstance.set(5, {from: accounts[0]})
       }).then(function(result) {
@@ -59,31 +65,39 @@ class App extends Component {
         // Update state with the result.
         return self.setState({ storageValue: result.c[0] })
       })
-    })
 
-        // Get accounts.
-    web3RPC.eth.getAccounts(function(error, accounts) {
-      console.log(accounts)
 
       simpleStorage.deployed().then(function(instance) {
         simpleStorageInstance = instance
 
-        return simpleStorageInstance.addressLink()
+        return simpleStorageInstance.addressLink.call(accounts[0])
       }).then(function(result) {
         // Update state with the result.
         console.log(result);
-        
         return self.setState({ address: result })
         
       })
+
+      simpleStorage.deployed().then(function(instance) {
+        simpleStorageInstance = instance
+
+        return simpleStorageInstance.returnLink.call(accounts[0])
+      }).then(function(result) {
+        // Update state with the result.
+        console.log(result);
+        return self.setState({ charity: result })
+        
+      })
     })
+
+
   }
 
   render() {
     return (
       <div className="App">
         <nav className="navbar pure-menu pure-menu-horizontal">
-            <a href="#" className="pure-menu-heading pure-menu-link">Given</a>
+            <a href="#" className="pure-menu-heading pure-menu-link"><img width="25" height="25" src={logo}/> Given</a>
             {/*}<ul className="pure-menu-list">
                 <li className="pure-menu-item"><a href="#" className="pure-menu-link">News</a></li>
                 <li className="pure-menu-item"><a href="#" className="pure-menu-link">Sports</a></li>
@@ -94,10 +108,11 @@ class App extends Component {
         <main className="container">
           <div className="pure-g">
             <div className="pure-u-1-1">
-                <p> It is an open source, simple charity contribution app intended 
-                for charities to gather a pool of funds distributed over time. </p> 
+                <p> An open source, simple charity contribution app intended 
+                for charities to gather a pool of funds in ether.</p> 
               <h2>Charity Pool</h2>
               <p>Current Funds Raised: {this.state.balance}</p>
+              <p>Charity Link: {this.state.charity}</p>
               <p>Address to donate: <br/> {this.state.address}</p>
             </div>
           </div>
